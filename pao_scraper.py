@@ -95,7 +95,7 @@ def scrape_pao_schedule():
     logger.info(f"Έναρξη σάρωσης από {BASE_URL}")
 
     while page <= MAX_PAGES:
-        url = "https://www.paobc.gr/schedule/" if page == 1 else f"{BASE_URL}{page}/"
+        url = "https://www.paobc.gr/en/schedule/" if page == 1 else f"{BASE_URL}{page}/"
         
         try:
             response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
