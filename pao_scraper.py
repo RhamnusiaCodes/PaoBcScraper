@@ -35,7 +35,7 @@ except ImportError:
 # ==========================================================
 CALENDAR_ID = os.environ.get("CALENDAR_ID", "primary")
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
-BASE_URL = "https://www.paobc.gr/schedule/page/"
+BASE_URL = "https://www.paobc.gr/schedule/"
 MAX_PAGES = 10
 REQUEST_TIMEOUT = 15
 
@@ -96,7 +96,7 @@ def scrape_pao_schedule():
     logger.info(f"Έναρξη σάρωσης από {BASE_URL}")
 
     while page <= MAX_PAGES:
-        url = BASE_URL + str(page) + "/"
+        url = BASE_URL if page == 1 else BASE_URL + "page/" + str(page) + "/"
         
         try:
             response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
