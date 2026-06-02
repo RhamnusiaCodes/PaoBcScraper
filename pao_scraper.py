@@ -34,7 +34,7 @@ except ImportError:
 # ==========================================================
 CALENDAR_ID = os.environ.get("CALENDAR_ID", "primary")
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
-BASE_URL = "https://www.paobc.gr/schedule/page/"
+BASE_URL = "https://www.paobc.gr/en/schedule/page/"
 MAX_PAGES = 10
 REQUEST_TIMEOUT = 15
 
