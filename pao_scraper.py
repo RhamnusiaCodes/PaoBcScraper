@@ -10,7 +10,7 @@ from googleapiclient.discovery import build
 import logging
 import re
 import time
-
+import cloudscraper
 # ==========================================================
 # LOGGING SETUP
 # ==========================================================
@@ -90,7 +90,7 @@ def scrape_pao_schedule():
     all_matches = []
     seen_matches = set()
     page = 1
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+    scraper = cloudscraper.create_scraper()
     consecutive_empty_pages = 0
 
     logger.info(f"Έναρξη σάρωσης από {BASE_URL}")
@@ -99,7 +99,7 @@ def scrape_pao_schedule():
         url = BASE_URL if page == 1 else BASE_URL + "page/" + str(page) + "/"
         
         try:
-            response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
+            response = scraper.get(url, timeout=REQUEST_TIMEOUT)
             response.raise_for_status()
             soup = BeautifulSoup(response.content, "html.parser")
             matches = soup.find_all("div", class_="game")
