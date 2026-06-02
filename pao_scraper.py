@@ -9,6 +9,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import logging
 import re
+import time
 
 # ==========================================================
 # LOGGING SETUP
@@ -34,7 +35,7 @@ except ImportError:
 # ==========================================================
 CALENDAR_ID = os.environ.get("CALENDAR_ID", "primary")
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
-BASE_URL = "https://www.paobc.gr/en/schedule/page/"
+BASE_URL = "https://www.paobc.gr/schedule/page/"
 MAX_PAGES = 10
 REQUEST_TIMEOUT = 15
 
@@ -157,6 +158,16 @@ def scrape_pao_schedule():
             logger.info(f"✓ Σελίδα {page}: {matches_on_page} αγώνες")
             page += 1
 
+        except requests.exceptions.HTTPError as e:
+            status = e.response.status_code if e.response is not None else 0
+            if status in (503, 502, 429):
+                logger.warning(f"⚠️ HTTP {status} στη σελίδα {page} — αναμονή 30s και επανάληψη...")
+                time.sleep(30)
+                continue  # επανάληψη του ίδιου page
+            logger.error(f"Σφάλμα δικτύου στη σελίδα {page}: {e}")
+            if all_matches:
+                break
+            sys.exit(1)
         except requests.RequestException as e:
             logger.error(f"Σφάλμα δικτύου στη σελίδα {page}: {e}")
             if all_matches:
