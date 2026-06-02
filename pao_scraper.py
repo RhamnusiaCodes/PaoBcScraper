@@ -9,8 +9,8 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import logging
 import re
-import time
 import cloudscraper
+
 # ==========================================================
 # LOGGING SETUP
 # ==========================================================
@@ -58,7 +58,7 @@ def normalize_team_name(name):
 def authenticate_google_calendar():
     """Ταυτοποίηση με Google Calendar"""
     logger.info("Έλεγχος ταυτότητας Google Calendar...")
-    
+
     try:
         if os.getenv('SERVICE_ACCOUNT_KEY'):
             logger.info("Φόρτωση credentials από environment variable")
@@ -75,11 +75,11 @@ def authenticate_google_calendar():
             )
         else:
             raise FileNotFoundError("Δεν βρέθηκαν service account credentials!")
-        
+
         service = build("calendar", "v3", credentials=credentials)
         logger.info("✓ Επιτυχής ταυτοποίηση")
         return service
-        
+
     except Exception as e:
         logger.error(f"❌ Σφάλμα ταυτοποίησης: {e}")
         sys.exit(1)
@@ -97,7 +97,7 @@ def scrape_pao_schedule():
 
     while page <= MAX_PAGES:
         url = BASE_URL if page == 1 else BASE_URL + "page/" + str(page) + "/"
-        
+
         try:
             response = scraper.get(url, timeout=REQUEST_TIMEOUT)
             response.raise_for_status()
@@ -111,7 +111,7 @@ def scrape_pao_schedule():
                     break
                 page += 1
                 continue
-            
+
             consecutive_empty_pages = 0
             matches_on_page = 0
 
@@ -158,16 +158,6 @@ def scrape_pao_schedule():
             logger.info(f"✓ Σελίδα {page}: {matches_on_page} αγώνες")
             page += 1
 
-        except requests.exceptions.HTTPError as e:
-            status = e.response.status_code if e.response is not None else 0
-            if status in (503, 502, 429):
-                logger.warning(f"⚠️ HTTP {status} στη σελίδα {page} — αναμονή 30s και επανάληψη...")
-                time.sleep(30)
-                continue  # επανάληψη του ίδιου page
-            logger.error(f"Σφάλμα δικτύου στη σελίδα {page}: {e}")
-            if all_matches:
-                break
-            sys.exit(1)
         except requests.RequestException as e:
             logger.error(f"Σφάλμα δικτύου στη σελίδα {page}: {e}")
             if all_matches:
@@ -185,7 +175,7 @@ def parse_match_datetime(date_text, time_text):
         greek_days = ["Δευτέρα", "Τρίτη", "Τετάρτη", "Πέμπτη", "Παρασκευή", "Σάββατο", "Κυριακή"]
         for day in greek_days:
             date_text = date_text.replace(day + ",", "").replace(day, "")
-        
+
         # Αφαίρεση ημερών εβδομάδας (αγγλικά - Ευρωλίγκα)
         english_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
         for day in english_days:
@@ -200,7 +190,7 @@ def parse_match_datetime(date_text, time_text):
             "Σεπτεμβρίου": "09", "Σεπ": "09", "Οκτωβρίου": "10", "Οκτ": "10",
             "Νοεμβρίου": "11", "Νοε": "11", "Δεκεμβρίου": "12", "Δεκ": "12",
         }
-        
+
         # Μετατροπή αγγλικών μηνών σε αριθμούς (Ευρωλίγκα)
         english_to_month = {
             "January": "01", "Jan": "01", "February": "02", "Feb": "02",
@@ -214,18 +204,18 @@ def parse_match_datetime(date_text, time_text):
         # Αντικατάσταση ελληνικών μηνών
         for greek, month_num in greek_to_month.items():
             date_text = date_text.replace(greek, month_num)
-        
+
         # Αντικατάσταση αγγλικών μηνών
         for english, month_num in english_to_month.items():
             date_text = date_text.replace(english, month_num)
 
         date_text = date_text.strip().replace(",", "")
         parts = date_text.split()
-        
+
         if len(parts) >= 3:
             day, month, year = parts[0], parts[1], parts[2]
             time = time_text.strip() if time_text and ":" in time_text else "21:15"
-            
+
             datetime_str = f"{day}/{month}/{year} {time}"
             return datetime.strptime(datetime_str, "%d/%m/%Y %H:%M")
 
@@ -252,7 +242,7 @@ def get_all_pao_events(service):
         ).execute()
 
         all_events = events_result.get("items", [])
-        
+
         # Φιλτράρισμα μόνο PAO events
         pao_events = []
         for event in all_events:
@@ -272,20 +262,20 @@ def extract_teams_from_summary(summary):
     """Εξαγωγή ομάδων από summary"""
     if not summary or " - " not in summary:
         return None, None
-    
+
     # Αφαίρεση emojis και brackets
     clean = re.sub(r'[^\w\s\-\[\]]', ' ', summary, flags=re.UNICODE)
     clean = re.sub(r'\s+', ' ', clean).strip()
-    
+
     # Αφαίρεση [dd/mm] bracket
     if "[" in clean:
         clean = clean.split("[")[0].strip()
-    
+
     # Split με " - "
     parts = clean.split(" - ")
     if len(parts) >= 2:
         return parts[0].strip(), parts[1].strip()
-    
+
     return None, None
 
 
@@ -302,47 +292,47 @@ def sync_calendar_with_website(service, website_matches):
     """
     Κύριος αλγόριθμος συγχρονισμού
     """
-    
+
     # =========================================================================
     # ΒΗΜΑ 1: Φόρτωση όλων των δεδομένων στη μνήμη
     # =========================================================================
     logger.info("\n" + "="*70)
     logger.info("ΒΗΜΑ 1: Φόρτωση δεδομένων στη μνήμη")
     logger.info("="*70)
-    
+
     # Φόρτωση calendar events
     calendar_events = get_all_pao_events(service)
-    
+
     # Δημιουργία map: key -> calendar event
     calendar_map = {}
     for event in calendar_events:
         home, away = extract_teams_from_summary(event.get("summary", ""))
         if not home or not away:
             continue
-            
+
         event_start = event.get("start", {}).get("dateTime", "")
         if not event_start:
             continue
-            
+
         event_dt = datetime.fromisoformat(event_start.replace("Z", "+00:00")).replace(tzinfo=None)
         event_key = create_match_key(home, away, event_dt)
-        
+
         calendar_map[event_key] = {
             "event_id": event["id"],
             "datetime": event_dt,
             "home": home,
             "away": away
         }
-    
+
     logger.info(f"  • Calendar events: {len(calendar_map)}")
-    
+
     # Δημιουργία map: key -> site match
     site_map = {}
     for match in website_matches:
         match_dt = parse_match_datetime(match["date"], match["time"])
         if not match_dt:
             continue
-        
+
         match_key = create_match_key(match["home_team"], match["away_team"], match_dt)
         site_map[match_key] = {
             "datetime": match_dt,
@@ -351,33 +341,33 @@ def sync_calendar_with_website(service, website_matches):
             "venue": match.get("venue", "ΟΑΚΑ"),
             "competition": match.get("competition", "")
         }
-    
+
     logger.info(f"  • Site matches: {len(site_map)}")
-    
+
     # =========================================================================
     # ΒΗΜΑ 2: Επεξεργασία calendar events
     # =========================================================================
     logger.info("\n" + "="*70)
     logger.info("ΒΗΜΑ 2: Έλεγχος calendar events")
     logger.info("="*70)
-    
+
     updated_count = 0
     deleted_count = 0
     processed_site_keys = set()
-    
+
     for cal_key, cal_info in list(calendar_map.items()):
         if cal_key in site_map:
             # Βρέθηκε στο site
             site_info = site_map[cal_key]
-            
+
             # Έλεγχος αν άλλαξε η ώρα
             time_diff = abs((cal_info["datetime"] - site_info["datetime"]).total_seconds())
-            
+
             if time_diff >= 60:  # Διαφορά > 1 λεπτό
                 # UPDATE - Αλλαγή ώρας
                 date_str = site_info["datetime"].strftime("%d/%m")
                 end_dt = site_info["datetime"] + timedelta(hours=2)
-                
+
                 event_data = {
                     "summary": f"☘️🏀 {site_info['home']} - {site_info['away']} [{date_str}]",
                     "location": site_info["venue"],
@@ -395,17 +385,17 @@ def sync_calendar_with_website(service, website_matches):
                         "overrides": [{"method": "popup", "minutes": 60}],
                     },
                 }
-                
+
                 service.events().update(
                     calendarId=CALENDAR_ID,
                     eventId=cal_info["event_id"],
                     body=event_data
                 ).execute()
-                
+
                 logger.info(f"🔄 ΕΝΗΜΕΡΩΣΗ: {cal_info['home']} vs {cal_info['away']} "
-                           f"({cal_info['datetime'].strftime('%H:%M')} → {site_info['datetime'].strftime('%H:%M')})")
+                            f"({cal_info['datetime'].strftime('%H:%M')} → {site_info['datetime'].strftime('%H:%M')})")
                 updated_count += 1
-            
+
             # Μάρκαρε ως processed
             processed_site_keys.add(cal_key)
         else:
@@ -414,26 +404,26 @@ def sync_calendar_with_website(service, website_matches):
                 calendarId=CALENDAR_ID,
                 eventId=cal_info["event_id"]
             ).execute()
-            
+
             logger.info(f"🗑️ ΔΙΑΓΡΑΦΗ: {cal_info['home']} vs {cal_info['away']} "
-                       f"({cal_info['datetime'].strftime('%d/%m/%Y')}) - δεν υπάρχει πια στο site")
+                        f"({cal_info['datetime'].strftime('%d/%m/%Y')}) - δεν υπάρχει πια στο site")
             deleted_count += 1
-    
+
     # =========================================================================
     # ΒΗΜΑ 3: Προσθήκη νέων matches από το site
     # =========================================================================
     logger.info("\n" + "="*70)
     logger.info("ΒΗΜΑ 3: Προσθήκη νέων matches")
     logger.info("="*70)
-    
+
     added_count = 0
-    
+
     for site_key, site_info in site_map.items():
         if site_key not in processed_site_keys:
             # Νέος αγώνας - INSERT
             date_str = site_info["datetime"].strftime("%d/%m")
             end_dt = site_info["datetime"] + timedelta(hours=2)
-            
+
             event_data = {
                 "summary": f"☘️🏀 {site_info['home']} - {site_info['away']} [{date_str}]",
                 "location": site_info["venue"],
@@ -451,13 +441,13 @@ def sync_calendar_with_website(service, website_matches):
                     "overrides": [{"method": "popup", "minutes": 60}],
                 },
             }
-            
+
             service.events().insert(calendarId=CALENDAR_ID, body=event_data).execute()
-            
+
             logger.info(f"✅ ΠΡΟΣΘΗΚΗ: {site_info['home']} vs {site_info['away']} "
-                       f"({site_info['datetime'].strftime('%d/%m/%Y %H:%M')})")
+                        f"({site_info['datetime'].strftime('%d/%m/%Y %H:%M')})")
             added_count += 1
-    
+
     # =========================================================================
     # ΣΥΝΟΨΗ
     # =========================================================================
@@ -476,21 +466,21 @@ def main():
     logger.info("="*70)
     logger.info("🏀 Panathinaikos BC Schedule Scraper")
     logger.info("="*70)
-    
+
     # Ταυτοποίηση
     service = authenticate_google_calendar()
-    
+
     # Σάρωση website
     logger.info("\n" + "="*70)
     logger.info("Σάρωση προγράμματος από paobc.gr")
     logger.info("="*70)
-    
+
     website_matches = scrape_pao_schedule()
-    
+
     if not website_matches:
         logger.error("❌ Δεν βρέθηκαν αγώνες - τερματισμός")
         sys.exit(1)
-    
+
     # Συγχρονισμός
     sync_calendar_with_website(service, website_matches)
 
