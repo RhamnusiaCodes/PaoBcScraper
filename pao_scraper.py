@@ -229,7 +229,7 @@ def parse_match_datetime(date_text, time_text):
 def get_all_pao_events(service):
     """Ανάκτηση όλων των PAO events από το ημερολόγιο"""
     try:
-        time_min = (datetime.now() - timedelta(days=180)).isoformat() + "Z"
+        time_min = (datetime.now() - timedelta(days=365)).isoformat() + "Z"
         time_max = (datetime.now() + timedelta(days=540)).isoformat() + "Z"
 
         events_result = service.events().list(
