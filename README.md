@@ -222,7 +222,7 @@ Pull requests are welcome! Για μεγάλες αλλαγές, άνοιξε π
 
 ## 🙏 Credits
 
-- Developed by [@RhamnusiaCdg](https://github.com/RhamnusiaCdg)
+- Developed by [@RhamnusiaCodes](https://github.com/RhamnusiaCodes)
 - Data source: [paobc.gr](https://www.paobc.gr)
 
 ---
