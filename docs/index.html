@@ -139,6 +139,15 @@
   }
   .btn-outline:hover{background:rgba(255,255,255,0.12);}
 
+  button.btn{
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .btn.copied{
+    background:var(--pao-green-line);
+    border-color:var(--pao-green-line);
+  }
+
   .btn svg{flex-shrink:0;}
 
   .hint{
@@ -244,9 +253,9 @@
       <a class="btn btn-outline" href="webcal://calendar.google.com/calendar/ical/c2144ac6cd1e676cf7a452ae4891e51c90211c45d287c9a6471487a4c65a3cd1%40group.calendar.google.com/public/basic.ics">
         iPhone / iPad / Mac
       </a>
-      <a class="btn btn-outline" href="https://calendar.google.com/calendar/ical/c2144ac6cd1e676cf7a452ae4891e51c90211c45d287c9a6471487a4c65a3cd1%40group.calendar.google.com/public/basic.ics">
-        Outlook (desktop)
-      </a>
+      <button type="button" class="btn btn-outline" id="outlook-copy-btn" data-ics-url="https://calendar.google.com/calendar/ical/c2144ac6cd1e676cf7a452ae4891e51c90211c45d287c9a6471487a4c65a3cd1%40group.calendar.google.com/public/basic.ics">
+        Outlook (web) — αντιγραφή link
+      </button>
       <a class="btn btn-outline" href="https://calendar.google.com/calendar/embed?src=c2144ac6cd1e676cf7a452ae4891e51c90211c45d287c9a6471487a4c65a3cd1%40group.calendar.google.com&ctz=Europe%2FAthens" target="_blank" rel="noopener">
         Προβολή στον browser
       </a>
@@ -265,7 +274,7 @@
       <li><strong>Android / Google Calendar:</strong> Πατήστε «Android / Google Calendar», επιλέξτε τον λογαριασμό σας και πατήστε «Προσθήκη ημερολογίου». Το πρόγραμμα θα εμφανιστεί στην εφαρμογή σας σε λίγα λεπτά.</li>
       <li><strong>iPhone / iPad:</strong> Ανοίξτε το αντίστοιχο σύνδεσμο στον Safari. Αν δεν ανοίξει αυτόματα, μεταβείτε στις <em>Ρυθμίσεις → Ημερολόγιο → Λογαριασμοί → Προσθήκη λογαριασμού → Άλλος → Προσθήκη εγγραφής ημερολογίου</em> και επικολλήστε τον σύνδεσμο iCal.</li>
       <li><strong>Mac:</strong> Πατήστε το ίδιο κουμπί — η εφαρμογή «Ημερολόγιο» της Apple θα σας προτείνει αυτόματα την εγγραφή.</li>
-      <li><strong>Outlook (desktop):</strong> Επιλέξτε <em>Προσθήκη ημερολογίου → Εγγραφή από το Web</em> και επικολλήστε τον σύνδεσμο από το κουμπί «Outlook». Βεβαιωθείτε ότι ο σύνδεσμος ξεκινάει με <code>https://</code>.</li>
+      <li><strong>Outlook (web):</strong> Πατήστε το κουμπί «Outlook (web) — αντιγραφή link». Αντιγράφει αυτόματα τον σύνδεσμο <strong>και</strong> ανοίγει το <strong>outlook.office.com</strong> σε νέα καρτέλα στη σελίδα προσθήκης ημερολογίου. Εκεί επιλέξτε <em>Εγγραφή από το Web</em>, επικολλήστε τον σύνδεσμο και πατήστε «Εισαγωγή». Δεν κατεβάζει κανένα αρχείο.</li>
       <li>Οι αγώνες ενημερώνονται αυτόματα σε καθημερινή βάση. Δεν απαιτείται καμία άλλη ενέργεια μετά την αρχική προσθήκη.</li>
     </ol>
   </div>
@@ -283,6 +292,29 @@
   Ανεξάρτητο, μη κερδοσκοπικό εγχείρημα από φιλάθλους για φιλάθλους. Τα δεδομένα αντλούνται από την επίσημη δημόσια σελίδα της ΚΑΕ.<br>
   Ο κώδικας διατίθεται ελεύθερα στο <a href="https://github.com/RhamnusiaCdg/PaoBcScraper" target="_blank" rel="noopener">GitHub — PaoBcScraper</a>
 </footer>
+
+<script>
+  const outlookBtn = document.getElementById('outlook-copy-btn');
+  if (outlookBtn) {
+    const originalText = outlookBtn.textContent;
+    outlookBtn.addEventListener('click', async () => {
+      const url = outlookBtn.getAttribute('data-ics-url');
+      try {
+        await navigator.clipboard.writeText(url);
+        outlookBtn.textContent = 'Αντιγράφηκε! Άνοιξε το Outlook →';
+        outlookBtn.classList.add('copied');
+        window.open('https://outlook.office.com/calendar/addcalendar', '_blank', 'noopener');
+      } catch (err) {
+        window.prompt('Αντέγραψε το link:', url);
+        window.open('https://outlook.office.com/calendar/addcalendar', '_blank', 'noopener');
+      }
+      setTimeout(() => {
+        outlookBtn.textContent = originalText;
+        outlookBtn.classList.remove('copied');
+      }, 4000);
+    });
+  }
+</script>
 
 </body>
 </html>
