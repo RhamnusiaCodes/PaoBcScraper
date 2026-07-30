@@ -41,6 +41,7 @@
     position:relative;
     background:
       radial-gradient(1200px 500px at 50% -10%, rgba(15,107,60,0.18), transparent 60%),
+      linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 35%, rgba(255,255,255,0.03) 60%, transparent 100%),
       var(--pao-green-dark);
     color:#fff;
     overflow:hidden;
@@ -232,10 +233,22 @@
 
 <div class="court-bg">
   <svg class="court-lines" viewBox="0 0 960 400" preserveAspectRatio="none" aria-hidden="true">
-    <line x1="480" y1="0" x2="480" y2="400" stroke="#1C8C52" stroke-width="1.5"/>
-    <circle cx="480" cy="200" r="70" fill="none" stroke="#1C8C52" stroke-width="1.5"/>
-    <path d="M 0 100 A 220 220 0 0 1 0 300" fill="none" stroke="#1C8C52" stroke-width="1.5"/>
-    <path d="M 960 100 A 220 220 0 0 0 960 300" fill="none" stroke="#1C8C52" stroke-width="1.5"/>
+    <!-- outer court boundary -->
+    <rect x="6" y="6" width="948" height="388" fill="none" stroke="#1C8C52" stroke-width="1.5"/>
+    <!-- half-court line -->
+    <line x1="480" y1="6" x2="480" y2="394" stroke="#1C8C52" stroke-width="1.5"/>
+    <!-- center circle -->
+    <circle cx="480" cy="200" r="55" fill="none" stroke="#1C8C52" stroke-width="1.5"/>
+    <!-- left key / free-throw lane -->
+    <rect x="6" y="130" width="150" height="140" fill="none" stroke="#1C8C52" stroke-width="1.5"/>
+    <circle cx="156" cy="200" r="55" fill="none" stroke="#1C8C52" stroke-width="1.5"/>
+    <!-- left three-point arc -->
+    <path d="M 6 30 A 320 320 0 0 0 6 370" fill="none" stroke="#1C8C52" stroke-width="1.5"/>
+    <!-- right key / free-throw lane -->
+    <rect x="804" y="130" width="150" height="140" fill="none" stroke="#1C8C52" stroke-width="1.5"/>
+    <circle cx="804" cy="200" r="55" fill="none" stroke="#1C8C52" stroke-width="1.5"/>
+    <!-- right three-point arc -->
+    <path d="M 954 30 A 320 320 0 0 1 954 370" fill="none" stroke="#1C8C52" stroke-width="1.5"/>
   </svg>
 
   <div class="hero">
